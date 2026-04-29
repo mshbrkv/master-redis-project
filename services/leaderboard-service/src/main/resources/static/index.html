@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Leaderboard (Master's Thesis)</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .leaderboard { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        .user-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #ddd; font-size: 18px; }
+        .user-row:nth-child(even) { background-color: #f9f9f9; }
+        .rank { font-weight: bold; color: #555; width: 30px;}
+        .points { font-weight: bold; color: #28a745; }
+        .status { text-align: center; font-size: 12px; color: gray; margin-bottom: 10px; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+
+<div class="leaderboard">
+    <h1>🏆 Top 10 Users</h1>
+    <div id="status" class="status">🔴 Disconnected from server</div>
+    <div id="leaderboard-content">
+    </div>
+</div>
+
+<script>
+    let stompClient = null;
+
+    function connect() {
+        let socket = new SockJS('http://localhost:8084/ws-leaderboard');
+        stompClient = Stomp.over(socket);
+
+        stompClient.debug = null;
+
+        stompClient.connect({}, function (frame) {
+            document.getElementById('status').innerHTML = "🟢 Connected in real-time (WebSockets)";
+
+            stompClient.subscribe('/topic/leaderboard', function (message) {
+                updateLeaderboard(JSON.parse(message.body));
+            });
+            fetchInitialData();
+        });
+    }
+
+    function fetchInitialData() {
+        fetch('http://localhost:8084/leaderboard/redis/top?limit=10')
+            .then(response => response.json())
+            .then(data => updateLeaderboard(data));
+    }
+
+    function updateLeaderboard(users) {
+        const container = document.getElementById('leaderboard-content');
+        container.innerHTML = '';
+
+        users.forEach((user, index) => {
+            container.innerHTML += `
+                <div class="user-row">
+                    <div>
+                        <span class="rank">#${index + 1}</span>
+                        <span class="userId">${user.userId}</span>
+                    </div>
+                    <span class="points">${user.points} pts</span>
+                </div>
+            `;
+        });
+    }
+    connect();
+</script>
+
+</body>
+</html>
