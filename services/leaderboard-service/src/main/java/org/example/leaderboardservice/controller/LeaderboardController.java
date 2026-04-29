@@ -19,19 +19,12 @@ public class LeaderboardController {
     private final LeaderboardService leaderboardService;
     private final BenchmarkService benchmarkService;
 
-    @GetMapping("/redis/top")
+    @GetMapping("/top")
     public ResponseEntity<List<LeaderboardEntryDto>> getTopUsersRedis(@RequestParam(defaultValue = "10") int limit) {
 
         List<LeaderboardEntryDto> topUsers = leaderboardService.getTopUsersRedis(limit);
         return ResponseEntity.ok(topUsers);
     }
-    @GetMapping("/sql/top")
-    public ResponseEntity<List<LeaderboardEntryDto>> getTopUsersSQL(@RequestParam(defaultValue = "10") int limit) {
-
-        List<LeaderboardEntryDto> topUsers = leaderboardService.getTopUsersSql(limit);
-        return ResponseEntity.ok(topUsers);
-    }
-
 
     @GetMapping("/rank/{userId}")
     public ResponseEntity<String> getUserRank(@PathVariable String userId) {

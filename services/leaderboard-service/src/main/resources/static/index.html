@@ -45,7 +45,7 @@
     }
 
     function fetchInitialData() {
-        fetch('http://localhost:8084/leaderboard/redis/top?limit=10')
+        fetch('http://localhost:8084/leaderboard/top?limit=10')
             .then(response => response.json())
             .then(data => updateLeaderboard(data));
     }
